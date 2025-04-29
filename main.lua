@@ -102,6 +102,9 @@ function DigitalClock:_startAutoSuspend()
     end
 end
 
+function DigitalClock:_getNextDateRefreshInSeconds()
+    return (24 - tonumber(os.date("%H"))) * 3600
+end
 
 function DigitalClock:addToMainMenu(menu_items)
     menu_items.digital_clock = {
@@ -117,15 +120,15 @@ function DigitalClock:showClock()
     logger.dbg("Showing clock")
 
     self.time_widget = TextWidget:new{
-        text = datetime.secondsToHour(os.time()),
-        face = Font:getFace("cfont", 100)
+        text = datetime.secondsToHour(os.time() + 60),
+        face = Font:getFace("cfont", 170)
     }
 
-    self.separator = VerticalSpan:new{width = 200}
+    self.separator = VerticalSpan:new{width = 130}
 
     self.date_widget = TextWidget:new{
         text = self:_getDateString(),
-        face = Font:getFace("cfont")
+        face = Font:getFace("cfont", 40)
     }
 
     self.image_widget = ImageWidget:new{
@@ -137,7 +140,6 @@ function DigitalClock:showClock()
         self.time_widget,
         self.date_widget,
         self.separator,
-        self.separator2,
         self.image_widget
     }
 
@@ -158,27 +160,45 @@ function DigitalClock:showClock()
 end
 
 function DigitalClock:setupAutoRefreshTime()
-    if not self.autoRefreshTime then
-        self.autoRefreshTime = function()
-            -- Update clock
-            logger.dbg("updating clock...")
+    -- Setup refresh functions
+    self.autoRefreshTime = function()
+        -- Update clock
+        logger.dbg("updating clock...", os.time())
+        self.time_widget:setText(datetime.secondsToHour(os.time() + 60))
 
-            self.time_widget.text = datetime.secondsToHour(os.time())
-            UIManager:setDirty(self.timewidget, "ui")
+        UIManager:setDirty(self.time_widget, "ui")
 
-            UIManager:scheduleIn(60 - tonumber(os.date("%S")), self.autoRefreshTime)
-        end
+
+        UIManager:scheduleIn(61 - tonumber(os.date("%S")), self.autoRefreshTime)
     end
+
+    self.autoRefreshDate = function()
+        -- Update date
+        logger.dbg("updating date...")
+        self.date_widget:setText(self:_getDateString())
+
+        UIManager:setDirty(self.date_widget, "ui")
+
+        UIManager:scheduleIn(self:_getNextDateRefreshInSeconds(), self.autoRefreshDate)
+    end
+
+    -- Unschedule refresh functions
     self.onCloseWidget = function()
         UIManager:unschedule(self.autoRefreshTime)
+        UIManager:unschedule(self.autoRefreshDate)
     end
     self.onSuspend = function()
         UIManager:unschedule(self.autoRefreshTime)
+        UIManager:unschedule(self.autoRefreshDate)
     end
     self.onResume = function()
         self.autoRefreshTime()
+        self.autoRefreshDate()
     end
-    UIManager:scheduleIn(60 - tonumber(os.date("%S")), self.autoRefreshTime)
+
+    -- Schedule run refresh functions
+    UIManager:scheduleIn(61 - tonumber(os.date("%S")), self.autoRefreshTime)
+    UIManager:scheduleIn(self:_getNextDateRefreshInSeconds(), self.autoRefreshDate)
 end
 
 

@@ -86,7 +86,7 @@ function DigitalClock:_pauseAutoSuspend()
     if Device:isCervantes() or Device:isKobo() then
         PluginShare.pause_auto_suspend = true
     elseif Device:isKindle() then
-        os.execute("lipc-set-prop com.lab126.powerd preventScreenSaver 0")
+        os.execute("lipc-set-prop com.lab126.powerd preventScreenSaver 1")
     else
         logger.warn("pause suspend not supported on this device")
     end
@@ -96,7 +96,7 @@ function DigitalClock:_startAutoSuspend()
     if Device:isCervantes() or Device:isKobo() then
         PluginShare.pause_auto_suspend = false
     elseif Device:isKindle() then
-        os.execute("lipc-set-prop com.lab126.powerd preventScreenSaver 1")
+        os.execute("lipc-set-prop com.lab126.powerd preventScreenSaver 0")
     else
         logger.warn("pause suspend not supported on this device")
     end

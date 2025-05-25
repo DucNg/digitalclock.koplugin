@@ -2,6 +2,8 @@
 
 Use your ebook as a clock with this plugin. Display time, date and an image.
 
+![preview](https://github.com/user-attachments/assets/68ad0b89-9ab2-45f4-8765-8397d386daec)
+
 ## Usage
 
 Copy digitalclock.koplugin folder in koreader/plugins.

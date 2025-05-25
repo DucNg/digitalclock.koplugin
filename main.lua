@@ -120,7 +120,7 @@ function DigitalClock:showClock()
     logger.dbg("Showing clock")
 
     self.time_widget = TextWidget:new{
-        text = datetime.secondsToHour(os.time() + 60),
+        text = datetime.secondsToHour(os.time()),
         face = Font:getFace("cfont", 170)
     }
 
@@ -153,6 +153,23 @@ function DigitalClock:showClock()
         self.centered_container
     }
 
+    local time_widget_height = self.time_widget:getSize().h
+    local date_widget_height = self.date_widget:getSize().h
+
+    self.time_dimen = Geom:new{
+        x = 0,
+        y = 100,
+        w = self.dimen.w,
+        h = time_widget_height,
+    }
+
+    self.date_dimen = Geom:new{
+        x = 0,
+        y = 100 + time_widget_height,
+        w = self.dimen.w,
+        h = date_widget_height,
+    }
+
     UIManager:show(self, "full")
 
     self:_pauseAutoSuspend()
@@ -164,10 +181,9 @@ function DigitalClock:setupAutoRefreshTime()
     self.autoRefreshTime = function()
         -- Update clock
         logger.dbg("updating clock...", os.time())
-        self.time_widget:setText(datetime.secondsToHour(os.time() + 60))
+        self.time_widget:setText(datetime.secondsToHour(os.time()))
 
-        UIManager:setDirty(self.time_widget, "ui")
-
+        UIManager:setDirty(self, "ui", self.time_dimen)
 
         UIManager:scheduleIn(61 - tonumber(os.date("%S")), self.autoRefreshTime)
     end
@@ -177,7 +193,7 @@ function DigitalClock:setupAutoRefreshTime()
         logger.dbg("updating date...")
         self.date_widget:setText(self:_getDateString())
 
-        UIManager:setDirty(self.date_widget, "ui")
+        UIManager:setDirty(self, "ui", self.date_dimen)
 
         UIManager:scheduleIn(self:_getNextDateRefreshInSeconds(), self.autoRefreshDate)
     end

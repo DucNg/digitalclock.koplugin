@@ -182,6 +182,7 @@ function DigitalClock:setupAutoRefreshTime()
         -- Update clock
         logger.dbg("updating clock...", os.time())
         self.time_widget:setText(datetime.secondsToHour(os.time()))
+        self.vertical_container:free()
 
         UIManager:setDirty(self, "ui", self.time_dimen)
 
@@ -192,6 +193,7 @@ function DigitalClock:setupAutoRefreshTime()
         -- Update date
         logger.dbg("updating date...")
         self.date_widget:setText(self:_getDateString())
+        self.vertical_container:free()
 
         UIManager:setDirty(self, "ui", self.date_dimen)
 

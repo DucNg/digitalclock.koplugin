@@ -225,7 +225,7 @@ function DigitalClock:setupAutoRefreshTime()
                 batt_lvl = main_batt_lvl
             end
 
-            if !is_charging && batt_lvl < 20 then
+            if not is_charging and batt_lvl < 20 then
                 self.bat_info_msg = InfoMessage:new{
                     text = T("Please recharge your device. Battery level: %1%", batt_lvl)
                 }

@@ -10,6 +10,7 @@ local FrameContainer = require("ui/widget/container/framecontainer")
 local Geom = require("ui/geometry")
 local GestureRange = require("ui/gesturerange")
 local ImageWidget = require("ui/widget/imagewidget")
+local InfoMessage = require("ui/widget/infomessage")
 local Input = Device.input
 local InputContainer = require("ui/widget/container/inputcontainer")
 local logger = require("logger")
@@ -170,6 +171,8 @@ function DigitalClock:showClock()
         h = date_widget_height,
     }
 
+    self.powerd = Device:getPowerDevice()
+
     UIManager:show(self, "full")
 
     self:_pauseAutoSuspend()
@@ -200,23 +203,63 @@ function DigitalClock:setupAutoRefreshTime()
         UIManager:scheduleIn(self:_getNextDateRefreshInSeconds(), self.autoRefreshDate)
     end
 
+    self.autoCheckBatteryLevel = function()
+        -- Check battery level
+        logger.dbg("checking battery level...")
+
+        if self.bat_info_msg then
+            UIManager.close(self.bat_info_msg)
+        end
+
+        if Device:hasBattery() then
+            local main_batt_lvl = self.powerd:getCapacity()
+
+            if Device:hasAuxBattery() and self.powerd:isAuxBatteryConnected() then
+                local aux_batt_lvl = self.powerd:getAuxCapacity()
+                is_charging = self.powerd:isAuxCharging()
+
+                -- Sum both batteries for the actual text
+                batt_lvl = (main_batt_lvl + aux_batt_lvl) / 2
+            else
+                is_charging = self.powerd:isCharging()
+                batt_lvl = main_batt_lvl
+            end
+
+            if !is_charging && batt_lvl < 20 then
+                self.bat_info_msg = InfoMessage:new{
+                    text = T("Please recharge your device. Battery level: %1%", batt_lvl)
+                }
+                UIManager:show(self.bat_info_msg)
+            end
+
+            UIManager:scheduleIn(2 * 3600, self.autoCheckBatteryLevel)
+        end
+    end
+
     -- Unschedule refresh functions
     self.onCloseWidget = function()
         UIManager:unschedule(self.autoRefreshTime)
         UIManager:unschedule(self.autoRefreshDate)
+        UIManager:unschedule(self.autoCheckBatteryLevel)
     end
     self.onSuspend = function()
         UIManager:unschedule(self.autoRefreshTime)
         UIManager:unschedule(self.autoRefreshDate)
+        UIManager:unschedule(self.autoCheckBatteryLevel)
     end
     self.onResume = function()
         self.autoRefreshTime()
         self.autoRefreshDate()
+        self.autoCheckBatteryLevel()
     end
 
     -- Schedule run refresh functions
+    -- Refresh time every minute
     UIManager:scheduleIn(61 - tonumber(os.date("%S")), self.autoRefreshTime)
+    -- Refresh date every day
     UIManager:scheduleIn(self:_getNextDateRefreshInSeconds(), self.autoRefreshDate)
+    -- Check battery level every 2h
+    UIManager:scheduleIn(2 * 3600, self.autoCheckBatteryLevel)
 end
 
 

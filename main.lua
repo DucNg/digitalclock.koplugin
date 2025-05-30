@@ -208,7 +208,7 @@ function DigitalClock:setupAutoRefreshTime()
         logger.dbg("checking battery level...")
 
         if self.bat_info_msg then
-            UIManager.close(self.bat_info_msg)
+            self.bat_info_msg:onTapClose()
         end
 
         if Device:hasBattery() then

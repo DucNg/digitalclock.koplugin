@@ -187,7 +187,7 @@ function DigitalClock:setupAutoRefreshTime()
         self.time_widget:setText(datetime.secondsToHour(os.time()))
         self.vertical_container:free()
 
-        UIManager:setDirty(self, "partial", self.time_dimen)
+        UIManager:setDirty(self, "ui", self.time_dimen)
 
         UIManager:scheduleIn(61 - tonumber(os.date("%S")), self.autoRefreshTime)
     end
@@ -198,7 +198,7 @@ function DigitalClock:setupAutoRefreshTime()
         self.date_widget:setText(self:_getDateString())
         self.vertical_container:free()
 
-        UIManager:setDirty(self, "partial", self.date_dimen)
+        UIManager:setDirty(self, "ui", self.date_dimen)
 
         UIManager:scheduleIn(self:_getNextDateRefreshInSeconds(), self.autoRefreshDate)
     end

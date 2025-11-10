@@ -18,6 +18,8 @@ On your device, go to tools -> more tools -> digital clock
 
 To customize the image, put an image in the digitalclock.koplugin folder, rename it to image.png, image.jpg, image.svg or image.jpeg.
 
-## Warning
+## Warnings
 
 clock.koplugin and digitalclock.koplugin conflict with each others. **Remove** clock.koplugin from your device before using digitalclock.koplugin.
+
+Using too big non-svg images could crash KOReader!

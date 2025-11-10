@@ -269,4 +269,8 @@ function DigitalClock:onTapClose()
 end
 DigitalClock.onAnyKeyPressed = DigitalClock.onTapClose
 
+function DigitalClock:onShowDigitalClock()
+    DigitalClock:showClock()
+end
+
 return DigitalClock

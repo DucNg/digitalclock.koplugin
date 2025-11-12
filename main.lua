@@ -14,6 +14,7 @@ local InfoMessage = require("ui/widget/infomessage")
 local Input = Device.input
 local InputContainer = require("ui/widget/container/inputcontainer")
 local logger = require("logger")
+local Notification = require("ui/widget/notification")
 local PluginShare = require("pluginshare")
 local Screen = Device.screen
 local T = require("ffi/util").template
@@ -23,6 +24,7 @@ local VerticalGroup = require("ui/widget/verticalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
 
 local PLUGIN_ROOT = "plugins/digitalclock.koplugin/"
+local BATTERY_CHECK_INTERVAL = 2 * 3600 -- 2 hours
 
 local DigitalClock = InputContainer:new{
     name = "DigitalClock",
@@ -225,6 +227,17 @@ function DigitalClock:setupAutoRefreshTime()
                 batt_lvl = main_batt_lvl
             end
 
+            if is_charging then
+                logger.dbg("showing battery indicator")
+                battery_indicator = Notification:new{
+                    text = "⚡" .. batt_lvl .. "%",
+                    face = Font:getFace("cfont", 20),
+                    timeout = BATTERY_CHECK_INTERVAL
+                }
+
+                UIManager:show(battery_indicator)
+            end
+
             if not is_charging and batt_lvl < 20 then
                 self.bat_info_msg = InfoMessage:new{
                     text = T("Please recharge your device. Battery level: %1%", batt_lvl)
@@ -232,7 +245,7 @@ function DigitalClock:setupAutoRefreshTime()
                 UIManager:show(self.bat_info_msg)
             end
 
-            UIManager:scheduleIn(2 * 3600, self.autoCheckBatteryLevel)
+            UIManager:scheduleIn(BATTERY_CHECK_INTERVAL, self.autoCheckBatteryLevel)
         end
     end
 
